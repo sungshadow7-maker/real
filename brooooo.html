@@ -1,0 +1,2732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Hanseong | Modern Korean Restaurant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        :root {
+            --hanbok-red: #cd2e3a;
+            --hanbok-blue: #2c6bac;
+            --hanbok-yellow: #f2b01e;
+            --hanbok-green: #2d5f2d;
+            --modern-gray: #f5f5f7;
+            --dark-gray: #1d1d1f;
+            --light-beige: #f8f3e6;
+            --gold-accent: #b8860b;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --vh: 1vh;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            background-color: var(--modern-gray);
+            color: var(--dark-gray);
+            overflow-x: hidden;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+        
+        .korean-font {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 5px;
+            margin-right: -5px;
+        }
+        
+        /* Mobile Navigation Overlay */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(29, 29, 31, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mobile-nav-overlay.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-nav-overlay ul {
+            list-style: none;
+            text-align: center;
+        }
+        
+        .mobile-nav-overlay li {
+            margin: 25px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+        
+        .mobile-nav-overlay.active li {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mobile-nav-overlay li:nth-child(1) { transition-delay: 0.1s; }
+        .mobile-nav-overlay li:nth-child(2) { transition-delay: 0.2s; }
+        .mobile-nav-overlay li:nth-child(3) { transition-delay: 0.3s; }
+        .mobile-nav-overlay li:nth-child(4) { transition-delay: 0.4s; }
+        .mobile-nav-overlay li:nth-child(5) { transition-delay: 0.5s; }
+        
+        .mobile-nav-overlay a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 10px 20px;
+            display: inline-block;
+        }
+        
+        .mobile-nav-overlay a:hover {
+            color: var(--hanbok-red);
+        }
+        
+        .close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 1000;
+        }
+        
+        /* Interactive Background */
+        #interactive-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        /* Korean Pattern Overlay */
+        .korean-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23cd2e3a' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: rgba(29, 29, 31, 0.95);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        header.scrolled {
+            padding: 10px 0;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            color: var(--hanbok-red);
+            font-size: 1.8rem;
+            animation: gentlePulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo h1 {
+            color: white;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+        
+        .logo span {
+            color: var(--hanbok-red);
+        }
+        
+        .logo .subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 2px;
+            font-weight: 300;
+        }
+        
+        nav {
+            transition: all 0.3s ease;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        
+        nav a:hover {
+            color: var(--hanbok-red);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--hanbok-red);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Enhanced Hero Section */
+        .hero {
+            min-height: 100vh;
+            min-height: calc(var(--vh, 1vh) * 100);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding-top: 80px;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            color: white;
+            padding: 30px;
+            background: rgba(29, 29, 31, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: contentFadeIn 1.5s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 0 auto;
+        }
+        
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: inline-block;
+            animation: titleSlideIn 1s ease-out;
+        }
+        
+        .hero h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--hanbok-red), var(--hanbok-yellow));
+            animation: lineExpand 1.5s ease-out 0.5s both;
+        }
+        
+        @keyframes titleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes lineExpand {
+            from {
+                width: 0;
+            }
+            to {
+                width: 70px;
+            }
+        }
+        
+        .hero h2 .subtitle {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 300;
+            margin-top: 10px;
+            color: var(--light-beige);
+            animation: subtitleFadeIn 1.2s ease-out 0.3s both;
+        }
+        
+        @keyframes subtitleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .hero p {
+            font-size: 1rem;
+            margin-bottom: 30px;
+            max-width: 100%;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+            animation: paragraphFadeIn 1.5s ease-out 0.7s both;
+        }
+        
+        @keyframes paragraphFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            animation: buttonsFadeIn 1.5s ease-out 1s both;
+        }
+        
+        @keyframes buttonsFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--hanbok-red), #e63946);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(205, 46, 58, 0.3);
+            min-height: 50px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #e63946, var(--hanbok-red));
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(205, 46, 58, 0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover i {
+            transform: translateX(5px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-outline:hover {
+            background: white;
+            color: var(--dark-gray);
+            border-color: white;
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Floating Korean Elements */
+        .floating-element {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.7;
+            animation: floatAnimation 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .floating-element:nth-child(1) {
+            top: 15%;
+            left: 8%;
+            font-size: 2.5rem;
+            color: var(--hanbok-red);
+            animation-delay: 0s;
+        }
+        
+        .floating-element:nth-child(2) {
+            top: 65%;
+            right: 8%;
+            font-size: 2.2rem;
+            color: var(--hanbok-blue);
+            animation-delay: 1s;
+        }
+        
+        .floating-element:nth-child(3) {
+            bottom: 20%;
+            left: 12%;
+            font-size: 1.8rem;
+            color: var(--hanbok-yellow);
+            animation-delay: 2s;
+        }
+        
+        .floating-element:nth-child(4) {
+            top: 45%;
+            right: 10%;
+            font-size: 2.3rem;
+            color: var(--hanbok-green);
+            animation-delay: 3s;
+        }
+        
+        @keyframes floatAnimation {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-25px) rotate(5deg);
+            }
+        }
+        
+        /* Particle System */
+        #hero-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* Food Illustration Animation */
+        .food-illustration {
+            position: absolute;
+            right: 8%;
+            bottom: 15%;
+            width: 350px;
+            height: 260px;
+            z-index: 2;
+            opacity: 0.8;
+            animation: illustrationFloat 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes illustrationFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            33% {
+                transform: translateY(-20px) rotate(3deg);
+            }
+            66% {
+                transform: translateY(15px) rotate(-3deg);
+            }
+        }
+        
+        /* Glowing Orbs */
+        .glowing-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0.4;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .orb-1 {
+            width: 250px;
+            height: 250px;
+            background: var(--hanbok-red);
+            top: 15%;
+            right: 10%;
+            animation: orbPulse 8s infinite alternate;
+        }
+        
+        .orb-2 {
+            width: 180px;
+            height: 180px;
+            background: var(--hanbok-blue);
+            bottom: 25%;
+            left: 8%;
+            animation: orbPulse 6s infinite alternate-reverse;
+        }
+        
+        @keyframes orbPulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0.5;
+            }
+        }
+        
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            opacity: 0.8;
+            animation: fadeInUp 2s ease-out 2s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 0.8;
+                transform: translate(-50%, 0);
+            }
+        }
+        
+        .scroll-indicator .mouse {
+            width: 30px;
+            height: 50px;
+            border: 2px solid white;
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        .scroll-indicator .wheel {
+            width: 4px;
+            height: 10px;
+            background-color: white;
+            border-radius: 2px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scrollWheel 2s infinite;
+        }
+        
+        @keyframes scrollWheel {
+            0%, 100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateX(-50%) translateY(20px);
+            }
+        }
+        
+        .scroll-indicator p {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        /* Text Reveal Animation */
+        .text-reveal {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .text-reveal::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--hanbok-red);
+            animation: textReveal 1.5s cubic-bezier(0.77, 0, 0.18, 1) 0.5s forwards;
+            transform: translateX(-100%);
+        }
+        
+        @keyframes textReveal {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(101%);
+            }
+        }
+
+        /* Parallax Section */
+        .parallax-section {
+            position: relative;
+            overflow: hidden;
+            padding: 120px 0;
+            background-attachment: fixed;
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            transform: translateY(0);
+            transition: transform 0.1s ease-out;
+        }
+        
+        .parallax-content {
+            position: relative;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.92);
+            padding: 50px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--hanbok-red);
+        }
+        
+        /* Sections */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 80px;
+            position: relative;
+        }
+        
+        .section-title h2 {
+            font-size: 2.8rem;
+            color: var(--dark-gray);
+            display: inline-block;
+            padding-bottom: 20px;
+            position: relative;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--hanbok-red);
+        }
+        
+        .section-title .subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 15px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        /* Scroll Animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .scroll-reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Menu Section */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .menu-item {
+            background-color: white;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 15px 40px var(--shadow-light);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 25px 60px var(--shadow-medium);
+        }
+        
+        .menu-item:hover::before {
+            opacity: 1;
+        }
+        
+        .menu-item-img {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.8s ease;
+        }
+        
+        .menu-item:hover .menu-item-img {
+            transform: scale(1.1);
+        }
+        
+        .menu-item-content {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+            background-color: white;
+        }
+        
+        .menu-item h3 {
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-item h3 .korean-name {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            color: #777;
+            font-weight: 400;
+        }
+        
+        .menu-item p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .menu-item-price {
+            color: var(--hanbok-red);
+            font-weight: 700;
+            font-size: 1.3rem;
+            display: inline-block;
+            position: relative;
+            padding: 5px 10px;
+            background: linear-gradient(to right, transparent 50%, rgba(205, 46, 58, 0.1) 50%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover .menu-item-price {
+            background-position: left bottom;
+            transform: translateX(5px);
+        }
+        
+        /* 3D Viewer */
+        #dish-viewer {
+            width: 100%;
+            height: 450px;
+            margin: 80px 0;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+            background-color: #f9f9f9;
+            touch-action: pan-x pan-y pinch-zoom;
+        }
+        
+        /* Micro-interactions */
+        .icon-animated {
+            font-size: 2.2rem;
+            color: var(--hanbok-blue);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0 15px 35px var(--shadow-light);
+        }
+        
+        .icon-animated:hover {
+            color: var(--hanbok-red);
+            transform: translateY(-12px) scale(1.15);
+            box-shadow: 0 25px 50px var(--shadow-medium);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hanbok-blue), var(--hanbok-red));
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .loading-animation {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 50px 0;
+        }
+        
+        .loading-dot {
+            width: 14px;
+            height: 14px;
+            background-color: var(--hanbok-red);
+            border-radius: 50%;
+            animation: bounce 1.5s infinite ease-in-out both;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Canvas Animation */
+        .canvas-container {
+            width: 100%;
+            height: 350px;
+            margin: 60px 0;
+            border-radius: 0;
+            overflow: hidden;
+            background-color: #f9f9f9;
+            position: relative;
+        }
+        
+        /* Sticky Elements */
+        .sticky-reservation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--hanbok-red), #e63946);
+            color: white;
+            padding: 18px 30px;
+            border-radius: 0;
+            box-shadow: 0 20px 50px rgba(205, 46, 58, 0.4);
+            z-index: 998;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        .sticky-reservation:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 30px 70px rgba(205, 46, 58, 0.5);
+            background: linear-gradient(135deg, #e63946, var(--hanbok-red));
+        }
+        
+        .reservation-icon {
+            animation: ring 3s infinite ease-in-out;
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: rotate(0); }
+            5%, 15% { transform: rotate(-15deg); }
+            10%, 20% { transform: rotate(15deg); }
+            25% { transform: rotate(0); }
+        }
+        
+        /* Zoom Effects on Scroll */
+        .zoom-on-scroll {
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark-gray);
+            color: white;
+            padding: 80px 0 40px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+        
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--hanbok-red);
+        }
+        
+        .footer-section p {
+            margin-bottom: 20px;
+            color: #aaa;
+            line-height: 1.7;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background-color: var(--hanbok-red);
+            transform: translateY(-5px) rotate(5deg);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Modern Korean Grid Pattern */
+        .modern-korean-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        /* Hover Effects for Interactive Elements */
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--hanbok-red);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b30000;
+        }
+        
+        /* Mobile-Specific Adjustments */
+        @media (max-width: 992px) {
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero h2 .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .food-illustration {
+                width: 280px;
+                height: 210px;
+                right: 5%;
+                bottom: 10%;
+            }
+            
+            .floating-element {
+                font-size: 2rem !important;
+            }
+            
+            .section-title h2 {
+                font-size: 2.2rem;
+            }
+            
+            .parallax-section {
+                padding: 100px 0;
+            }
+            
+            .parallax-content {
+                padding: 40px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            nav ul {
+                display: none;
+            }
+            
+            .hero {
+                min-height: 100vh;
+                min-height: calc(var(--vh, 1vh) * 100);
+                padding-top: 70px;
+            }
+            
+            .hero-content {
+                padding: 25px;
+                margin: 0 15px;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .hero h2 .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero p {
+                font-size: 0.95rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+                min-height: 55px;
+            }
+            
+            .food-illustration {
+                width: 220px;
+                height: 165px;
+                right: 3%;
+                bottom: 12%;
+                opacity: 0.6;
+            }
+            
+            .floating-element {
+                font-size: 1.8rem !important;
+            }
+            
+            .floating-element:nth-child(1) {
+                left: 5%;
+                top: 12%;
+            }
+            
+            .floating-element:nth-child(2) {
+                right: 5%;
+                top: 60%;
+            }
+            
+            .floating-element:nth-child(3) {
+                left: 8%;
+                bottom: 15%;
+            }
+            
+            .floating-element:nth-child(4) {
+                right: 8%;
+                top: 40%;
+            }
+            
+            .orb-1, .orb-2 {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+            
+            .section-title .subtitle {
+                font-size: 1rem;
+            }
+            
+            .parallax-section {
+                padding: 80px 0;
+            }
+            
+            .parallax-content {
+                padding: 30px;
+            }
+            
+            section {
+                padding: 80px 0;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            #dish-viewer {
+                height: 350px;
+                margin: 50px 0;
+            }
+            
+            .canvas-container {
+                height: 280px;
+                margin: 40px 0;
+            }
+            
+            .sticky-reservation {
+                padding: 15px 25px;
+                font-size: 0.85rem;
+                bottom: 20px;
+                right: 20px;
+                min-height: 50px;
+            }
+            
+            .footer-content {
+                gap: 40px;
+                margin-bottom: 40px;
+            }
+            
+            .icon-animated {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            
+            .scroll-indicator {
+                bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .hero h2 .subtitle {
+                font-size: 1rem;
+            }
+            
+            .hero p {
+                font-size: 0.9rem;
+            }
+            
+            .food-illustration {
+                width: 180px;
+                height: 135px;
+                opacity: 0.5;
+            }
+            
+            .floating-element {
+                font-size: 1.5rem !important;
+            }
+            
+            .orb-1, .orb-2 {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .section-title h2 {
+                font-size: 1.6rem;
+            }
+            
+            .section-title .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .menu-item-img {
+                height: 200px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .mobile-nav-overlay a {
+                font-size: 1.5rem;
+            }
+            
+            .icon-animated {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            #dish-viewer {
+                height: 280px;
+            }
+            
+            .canvas-container {
+                height: 220px;
+            }
+        }
+        
+        /* Touch Device Optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:hover {
+                transform: none;
+            }
+            
+            .menu-item:hover {
+                transform: none;
+            }
+            
+            .icon-animated:hover {
+                transform: none;
+            }
+            
+            .social-icon:hover {
+                transform: none;
+            }
+            
+            .sticky-reservation:hover {
+                transform: none;
+            }
+            
+            nav a:hover {
+                color: white;
+            }
+            
+            nav a:hover::after {
+                width: 0;
+            }
+            
+            .menu-item-price:hover {
+                transform: none;
+                background-position: right bottom;
+            }
+            
+            /* Active states for touch */
+            .btn:active {
+                transform: scale(0.98);
+            }
+            
+            .menu-item:active {
+                transform: translateY(-5px) scale(0.98);
+            }
+            
+            .icon-animated:active {
+                transform: scale(0.95);
+            }
+            
+            .social-icon:active {
+                transform: translateY(-3px);
+            }
+            
+            .sticky-reservation:active {
+                transform: scale(0.98);
+            }
+        }
+        
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .hero {
+                min-height: -webkit-fill-available;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Interactive Background -->
+    <div id="interactive-bg"></div>
+    
+    <!-- Korean Pattern Overlay -->
+    <div class="korean-pattern"></div>
+    
+    <!-- Modern Korean Grid -->
+    <div class="modern-korean-grid"></div>
+    
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay">
+        <button class="close-menu" id="closeMenuBtn">
+            <i class="fas fa-times"></i>
+        </button>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">Our Philosophy</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#contact">Reservations</a></li>
+        </ul>
+    </div>
+    
+    <!-- Header -->
+    <header id="header">
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <div>
+                    <h1>HANSEONG <span>한성</span></h1>
+                    <div class="subtitle">MODERN KOREAN CUISINE</div>
+                </div>
+            </div>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">Our Philosophy</a></li>
+                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#contact">Reservations</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Enhanced Hero Section with ALL Animations -->
+    <section id="home" class="hero">
+        <!-- Glowing Orbs -->
+        <div class="glowing-orb orb-1"></div>
+        <div class="glowing-orb orb-2"></div>
+        
+        <!-- Floating Korean Elements -->
+        <div class="floating-element">🍚</div>
+        <div class="floating-element">🥢</div>
+        <div class="floating-element">🍵</div>
+        <div class="floating-element">🥄</div>
+        
+        <!-- Particle System Canvas -->
+        <canvas id="hero-particles"></canvas>
+        
+        <!-- Food Illustration -->
+        <div class="food-illustration">
+            <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                <!-- Korean BBQ Grill -->
+                <rect x="100" y="150" width="200" height="30" rx="5" fill="#8B4513"/>
+                <rect x="110" y="130" width="180" height="20" rx="3" fill="#A0522D"/>
+                
+                <!-- Meat on grill -->
+                <ellipse cx="150" cy="140" rx="25" ry="15" fill="#8B0000"/>
+                <ellipse cx="200" cy="135" rx="20" ry="12" fill="#B22222"/>
+                <ellipse cx="250" cy="138" rx="22" ry="14" fill="#DC143C"/>
+                
+                <!-- Smoke animation -->
+                <circle cx="150" cy="120" r="8" fill="rgba(255,255,255,0.5)">
+                    <animate attributeName="cy" from="120" to="100" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="115" r="6" fill="rgba(255,255,255,0.4)">
+                    <animate attributeName="cy" from="115" to="95" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+                    <animate attributeName="opacity" from="0.6" to="0" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+                </circle>
+                <circle cx="250" cy="118" r="7" fill="rgba(255,255,255,0.3)">
+                    <animate attributeName="cy" from="118" to="98" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                    <animate attributeName="opacity" from="0.5" to="0" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+                </circle>
+                
+                <!-- Side dishes -->
+                <circle cx="50" cy="200" r="20" fill="#2d5f2d"/>
+                <circle cx="50" cy="200" r="15" fill="#3cb371"/>
+                
+                <rect x="300" y="180" width="40" height="40" rx="5" fill="#f2b01e"/>
+                <rect x="310" y="190" width="20" height="20" fill="#ffd700"/>
+                
+                <ellipse cx="350" cy="220" rx="25" ry="20" fill="#cd2e3a"/>
+                <ellipse cx="350" cy="220" rx="15" ry="12" fill="#ff6b6b"/>
+                
+                <!-- Chopsticks -->
+                <rect x="80" y="100" width="5" height="60" rx="2" fill="#8B4513" transform="rotate(20 80 100)"/>
+                <rect x="90" y="105" width="5" height="60" rx="2" fill="#A0522D" transform="rotate(20 90 105)"/>
+            </svg>
+        </div>
+        
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="text-reveal">Modern Korean Cuisine
+                    <span class="subtitle">Contemporary Korean Flavors</span>
+                </h2>
+                <p>At Hanseong, we reinterpret traditional Korean flavors through contemporary techniques, creating an unforgettable dining experience that honors heritage while embracing innovation.</p>
+                <div class="hero-buttons">
+                    <a href="#menu" class="btn">
+                        <i class="fas fa-utensils"></i>
+                        Explore Menu
+                    </a>
+                    <a href="#contact" class="btn btn-outline">
+                        <i class="fas fa-calendar-alt"></i>
+                        Reserve Table
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <p>Scroll to explore</p>
+        </div>
+    </section>
+    
+    <!-- Parallax Scrolling Section -->
+    <section class="parallax-section">
+        <div class="parallax-bg" style="background-image: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');"></div>
+        <div class="container">
+            <div class="parallax-content scroll-reveal">
+                <h2 style="margin-bottom: 20px;">Korean Culinary Philosophy</h2>
+                <p class="korean-font" style="font-style: italic; color: #666; margin-bottom: 25px;">"Food is medicine"</p>
+                <p>Korean cuisine is based on the principle of balance and harmony. Our chefs carefully select seasonal ingredients to create dishes that not only delight the palate but also nourish the body. We follow the traditional concept of the five cardinal colors that represent harmony and balance in Korean aesthetics.</p>
+                
+                <!-- Micro-interaction: Animated Icons -->
+                <div style="display: flex; justify-content: space-around; margin: 50px 0; flex-wrap: wrap; gap: 30px;">
+                    <div style="text-align: center;">
+                        <div class="icon-animated">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <p style="text-align: center; margin-top: 20px; font-weight: 500;">Seasonal Ingredients</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="icon-animated">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <p style="text-align: center; margin-top: 20px; font-weight: 500;">Harmony & Balance</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="icon-animated">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <p style="text-align: center; margin-top: 20px; font-weight: 500;">Traditional Techniques</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="icon-animated">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p style="text-align: center; margin-top: 20px; font-weight: 500;">Modern Presentation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Philosophy</h2>
+                <div class="subtitle">Our Culinary Approach</div>
+            </div>
+            
+            <div class="scroll-reveal" style="max-width: 900px; margin: 0 auto;">
+                <p style="font-size: 1.1rem; margin-bottom: 40px; text-align: center;">At Hanseong, we believe in the Korean dining philosophy of perfect balance – the harmony of flavors, textures, and colors that creates a harmonious dining experience. Our chefs combine centuries-old techniques with modern culinary innovation.</p>
+                
+                <!-- Progress Indicators -->
+                <div style="max-width: 700px; margin: 60px auto;">
+                    <div class="progress-item">
+                        <p style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Authentic Korean Flavors</span>
+                            <span>95%</span>
+                        </p>
+                        <div class="progress-container">
+                            <div class="progress-bar" data-width="95"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item" style="margin-top: 40px;">
+                        <p style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Ingredient Quality</span>
+                            <span>98%</span>
+                        </p>
+                        <div class="progress-container">
+                            <div class="progress-bar" data-width="98"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item" style="margin-top: 40px;">
+                        <p style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Dining Experience</span>
+                            <span>92%</span>
+                        </p>
+                        <div class="progress-container">
+                            <div class="progress-bar" data-width="92"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item" style="margin-top: 40px;">
+                        <p style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Customer Satisfaction</span>
+                            <span>96%</span>
+                        </p>
+                        <div class="progress-container">
+                            <div class="progress-bar" data-width="96"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading Animation -->
+                <div class="loading-animation">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Menu Section -->
+    <section id="menu" style="background-color: var(--light-beige);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Signature Dishes</h2>
+                <div class="subtitle">Our Most Popular Creations</div>
+            </div>
+            
+            <div class="menu-grid">
+                <!-- Menu Items with Scroll Animations -->
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Galbi Jim
+                            <span class="korean-name">갈비찜</span>
+                        </h3>
+                        <p>Braised short ribs in a sweet and savory soy-based sauce with chestnuts, jujubes, and pine nuts</p>
+                        <div class="menu-item-price">$42</div>
+                    </div>
+                </div>
+                
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1589302168068-964664d93dc0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Bibimbap
+                            <span class="korean-name">비빔밥</span>
+                        </h3>
+                        <p>Signature mixed rice with seasonal vegetables, beef, fried egg, and gochujang served in a hot stone bowl</p>
+                        <div class="menu-item-price">$28</div>
+                    </div>
+                </div>
+                
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Hanjeongsik
+                            <span class="korean-name">한정식</span>
+                        </h3>
+                        <p>Full-course Korean banquet featuring multiple small dishes representing the five flavors and colors</p>
+                        <div class="menu-item-price">$85</div>
+                    </div>
+                </div>
+                
+                <!-- Additional Menu Items -->
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Bulgogi
+                            <span class="korean-name">불고기</span>
+                        </h3>
+                        <p>Marinated beef grilled to perfection, served with fresh lettuce wraps and ssamjang</p>
+                        <div class="menu-item-price">$36</div>
+                    </div>
+                </div>
+                
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1551509136-2c1d3b023b1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Japchae
+                            <span class="korean-name">잡채</span>
+                        </h3>
+                        <p>Stir-fried glass noodles with vegetables and beef in a sweet sesame sauce</p>
+                        <div class="menu-item-price">$24</div>
+                    </div>
+                </div>
+                
+                <div class="menu-item scroll-reveal zoom-on-scroll">
+                    <div class="menu-item-img" style="background-image: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-1.2.1&auto=format&fit=crop&w-1350&q=80');"></div>
+                    <div class="menu-item-content">
+                        <h3>Kimchi Jjigae
+                            <span class="korean-name">김치찌개</span>
+                        </h3>
+                        <p>Spicy kimchi stew with pork, tofu, and vegetables in a rich fermented broth</p>
+                        <div class="menu-item-price">$22</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3D Dish Viewer -->
+            <div id="dish-viewer" class="scroll-reveal"></div>
+            
+            <!-- Canvas Animation -->
+            <div class="canvas-container scroll-reveal">
+                <canvas id="food-canvas"></canvas>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Experience Section -->
+    <section id="experience">
+        <div class="container">
+            <div class="section-title">
+                <h2>The Hanseong Experience</h2>
+                <div class="subtitle">More Than Just a Meal</div>
+            </div>
+            
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div class="scroll-reveal" style="text-align: center; margin-bottom: 60px;">
+                    <p style="font-size: 1.1rem;">Experience traditional Korean hospitality in a modern setting. Our dining rooms feature contemporary interpretations of traditional Korean design elements, creating a serene atmosphere that complements our cuisine.</p>
+                </div>
+                
+                <!-- Sticky-like element that changes on scroll -->
+                <div class="scroll-reveal" style="background-color: white; padding: 50px; box-shadow: 0 20px 60px var(--shadow-light); margin-top: 40px; position: relative;">
+                    <div id="sticky-feature" style="display: flex; align-items: center; gap: 40px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <h3 style="margin-bottom: 25px; font-size: 1.8rem;">Korean Tea Ceremony</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.8;">Experience a modern interpretation of the traditional Korean tea ceremony. Our tea master selects seasonal leaves and prepares each cup with precision and care.</p>
+                            <a href="#contact" class="btn" style="margin-top: 30px; padding: 15px 35px; font-size: 0.9rem;">Book Experience</a>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; height: 280px; background-image: url('https://images.unsplash.com/photo-1567690346812-4618f62f3980?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; border-radius: 5px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Sticky Reservation Button -->
+    <div class="sticky-reservation" id="stickyReservation">
+        <div class="reservation-icon">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <span>Reserve Table</span>
+    </div>
+    
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Hanseong</h3>
+                    <p>Modern Korean cuisine that honors tradition while embracing innovation. Experience the perfect balance of flavors, textures, and colors.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Seoul Street, Gangnam-gu, Seoul</p>
+                    <p><i class="fas fa-phone" style="margin-right: 10px;"></i> +82 2 1234 5678</p>
+                    <p><i class="fas fa-envelope" style="margin-right: 10px;"></i> info@hanseong.com</p>
+                    <p><i class="fas fa-clock" style="margin-right: 10px;"></i> Mon-Sun: 11:30 AM - 10:00 PM</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Reservations</h3>
+                    <p>For reservations, please call us or use our online booking system. We recommend booking at least one week in advance for weekend dining.</p>
+                    <a href="#contact" class="btn" style="margin-top: 20px; display: inline-block; padding: 15px 30px;">Book Now</a>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 Hanseong Modern Korean Restaurant. All rights reserved.</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">Design inspired by Korean aesthetics and modern minimalism</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Navigation
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+        const navLinks = document.querySelectorAll('.mobile-nav-overlay a');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileNavOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Animate menu items in
+            const items = mobileNavOverlay.querySelectorAll('li');
+            items.forEach((item, index) => {
+                item.style.transitionDelay = `${(index + 1) * 0.1}s`;
+            });
+        });
+        
+        closeMenuBtn.addEventListener('click', () => {
+            mobileNavOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        });
+        
+        // Fix for iOS Safari 100vh issue
+        function setVH() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setVH, 300);
+        });
+        
+        // Enhanced Particle System for Hero Section
+        class HeroParticleSystem {
+            constructor() {
+                this.canvas = document.getElementById('hero-particles');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 150 };
+                this.isMobile = window.innerWidth <= 768;
+                
+                this.init();
+                this.animate();
+            }
+            
+            init() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                // Create particles with Korean food colors - reduced for mobile
+                const colors = ['#cd2e3a', '#2c6bac', '#f2b01e', '#2d5f2d', '#ffffff', '#b8860b'];
+                const particleCount = this.isMobile ? 100 : 150;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const size = Math.random() * (this.isMobile ? 4 : 5) + 1;
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: size,
+                        speedX: Math.random() * (this.isMobile ? 1.5 : 2) - (this.isMobile ? 0.75 : 1),
+                        speedY: Math.random() * (this.isMobile ? 1.5 : 2) - (this.isMobile ? 0.75 : 1),
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        opacity: Math.random() * 0.6 + 0.2,
+                        type: Math.random() > 0.7 ? 'rice' : 'dot'
+                    });
+                }
+                
+                // Mouse move event
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                
+                // Touch move event for mobile
+                window.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) {
+                        this.mouse.x = e.touches[0].clientX;
+                        this.mouse.y = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                // Resize event
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.isMobile = window.innerWidth <= 768;
+                });
+            }
+            
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw gradient background
+                const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+                gradient.addColorStop(0, 'rgba(26, 26, 46, 0.1)');
+                gradient.addColorStop(1, 'rgba(15, 52, 96, 0.1)');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Update and draw particles
+                for (let i = 0; i < this.particles.length; i++) {
+                    let p = this.particles[i];
+                    
+                    // Move particles
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    
+                    // Bounce off walls with slight randomization
+                    if (p.x > this.canvas.width || p.x < 0) {
+                        p.speedX = -p.speedX * (0.9 + Math.random() * 0.2);
+                    }
+                    if (p.y > this.canvas.height || p.y < 0) {
+                        p.speedY = -p.speedY * (0.9 + Math.random() * 0.2);
+                    }
+                    
+                    // Mouse interaction
+                    let dx = this.mouse.x - p.x;
+                    let dy = this.mouse.y - p.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let interactionRadius = this.isMobile ? 120 : 150;
+                    
+                    if (distance < interactionRadius) {
+                        let angle = Math.atan2(dy, dx);
+                        let force = (interactionRadius - distance) / interactionRadius;
+                        p.speedX -= Math.cos(angle) * force * (this.isMobile ? 1 : 1.5);
+                        p.speedY -= Math.sin(angle) * force * (this.isMobile ? 1 : 1.5);
+                        
+                        // Draw glowing connection line to mouse
+                        if (!this.isMobile) {
+                            this.ctx.beginPath();
+                            const lineOpacity = 0.2 * (1 - distance/interactionRadius);
+                            this.ctx.strokeStyle = `rgba(255, 255, 255, ${lineOpacity})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(this.mouse.x, this.mouse.y);
+                            this.ctx.stroke();
+                            
+                            // Add glow effect
+                            this.ctx.beginPath();
+                            this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                            this.ctx.fillStyle = `rgba(${this.hexToRgb(p.color)}, ${0.1 * (1 - distance/interactionRadius)})`;
+                            this.ctx.fill();
+                        }
+                    }
+                    
+                    // Limit speed
+                    const maxSpeed = this.isMobile ? 2.5 : 3;
+                    const currentSpeed = Math.sqrt(p.speedX * p.speedX + p.speedY * p.speedY);
+                    if (currentSpeed > maxSpeed) {
+                        p.speedX = (p.speedX / currentSpeed) * maxSpeed;
+                        p.speedY = (p.speedY / currentSpeed) * maxSpeed;
+                    }
+                    
+                    // Draw particle based on type
+                    if (p.type === 'rice' && !this.isMobile) {
+                        // Draw rice grain shape
+                        this.ctx.save();
+                        this.ctx.translate(p.x, p.y);
+                        this.ctx.rotate(Math.atan2(p.speedY, p.speedX));
+                        
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(0, 0, p.size * 1.5, p.size * 0.8, 0, 0, Math.PI * 2);
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.globalAlpha = p.opacity;
+                        this.ctx.fill();
+                        
+                        // Rice grain highlight
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(-p.size * 0.5, -p.size * 0.3, p.size * 0.4, p.size * 0.2, 0, 0, Math.PI * 2);
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                        this.ctx.fill();
+                        
+                        this.ctx.restore();
+                    } else {
+                        // Draw circular particle with glow
+                        if (!this.isMobile) {
+                            this.ctx.beginPath();
+                            this.ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+                            this.ctx.fillStyle = `rgba(${this.hexToRgb(p.color)}, ${p.opacity * 0.3})`;
+                            this.ctx.fill();
+                        }
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.globalAlpha = p.opacity;
+                        this.ctx.fill();
+                        
+                        // Add shine effect
+                        if (!this.isMobile) {
+                            this.ctx.beginPath();
+                            this.ctx.arc(p.x - p.size/3, p.y - p.size/3, p.size/3, 0, Math.PI * 2);
+                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                            this.ctx.fill();
+                        }
+                    }
+                    this.ctx.globalAlpha = 1;
+                    
+                    // Draw connections between nearby particles
+                    if (!this.isMobile) {
+                        for (let j = i + 1; j < this.particles.length; j++) {
+                            let p2 = this.particles[j];
+                            let dx = p.x - p2.x;
+                            let dy = p.y - p2.y;
+                            let distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < 100) {
+                                this.ctx.beginPath();
+                                this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 * (1 - distance/100)})`;
+                                this.ctx.lineWidth = 1;
+                                this.ctx.moveTo(p.x, p.y);
+                                this.ctx.lineTo(p2.x, p2.y);
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+            }
+        }
+        
+        // Initialize enhanced hero particle system
+        new HeroParticleSystem();
+        
+        // Original particle system for interactive background
+        class ParticleSystem {
+            constructor() {
+                this.canvas = document.createElement('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 120 };
+                this.isMobile = window.innerWidth <= 768;
+                
+                this.init();
+                this.animate();
+                
+                document.getElementById('interactive-bg').appendChild(this.canvas);
+            }
+            
+            init() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                // Create particles with Korean color palette - reduced for mobile
+                const colors = ['#cd2e3a', '#2c6bac', '#f2b01e', '#2d5f2d', '#b8860b'];
+                const particleCount = this.isMobile ? 80 : 120;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: Math.random() * (this.isMobile ? 3 : 4) + 1,
+                        speedX: Math.random() * (this.isMobile ? 1 : 1) - (this.isMobile ? 0.5 : 0.5),
+                        speedY: Math.random() * (this.isMobile ? 1 : 1) - (this.isMobile ? 0.5 : 0.5),
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        opacity: Math.random() * 0.5 + 0.2
+                    });
+                }
+                
+                // Mouse move event
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                
+                // Touch move event for mobile
+                window.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) {
+                        this.mouse.x = e.touches[0].clientX;
+                        this.mouse.y = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                // Resize event
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.isMobile = window.innerWidth <= 768;
+                });
+            }
+            
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw subtle grid pattern in background
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)';
+                this.ctx.lineWidth = 1;
+                
+                // Vertical lines
+                for (let x = 0; x < this.canvas.width; x += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let y = 0; y < this.canvas.height; y += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Update and draw particles
+                for (let i = 0; i < this.particles.length; i++) {
+                    let p = this.particles[i];
+                    
+                    // Move particles
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    
+                    // Bounce off walls
+                    if (p.x > this.canvas.width || p.x < 0) p.speedX = -p.speedX;
+                    if (p.y > this.canvas.height || p.y < 0) p.speedY = -p.speedY;
+                    
+                    // Mouse interaction
+                    let dx = this.mouse.x - p.x;
+                    let dy = this.mouse.y - p.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < this.mouse.radius) {
+                        let angle = Math.atan2(dy, dx);
+                        let force = (this.mouse.radius - distance) / this.mouse.radius;
+                        p.speedX -= Math.cos(angle) * force * 0.6;
+                        p.speedY -= Math.sin(angle) * force * 0.6;
+                        
+                        // Draw connection line to mouse
+                        if (!this.isMobile) {
+                            this.ctx.beginPath();
+                            this.ctx.strokeStyle = `rgba(205, 46, 58, ${0.1 * (1 - distance/this.mouse.radius)})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(this.mouse.x, this.mouse.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                    
+                    // Draw particle
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.globalAlpha = p.opacity;
+                    this.ctx.fill();
+                    this.ctx.globalAlpha = 1;
+                    
+                    // Draw connections between nearby particles
+                    if (!this.isMobile) {
+                        for (let j = i + 1; j < this.particles.length; j++) {
+                            let p2 = this.particles[j];
+                            let dx = p.x - p2.x;
+                            let dy = p.y - p2.y;
+                            let distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < 120) {
+                                this.ctx.beginPath();
+                                this.ctx.strokeStyle = `rgba(44, 107, 172, ${0.08 * (1 - distance/120)})`;
+                                this.ctx.lineWidth = 1;
+                                this.ctx.moveTo(p.x, p.y);
+                                this.ctx.lineTo(p2.x, p2.y);
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize particle system
+        new ParticleSystem();
+        
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+        
+        // Scroll Animations
+        const scrollReveals = document.querySelectorAll('.scroll-reveal');
+        
+        const revealOnScroll = () => {
+            scrollReveals.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementTop < windowHeight - 100) {
+                    element.classList.add('active');
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll(); // Initial check
+        
+        // Parallax Scrolling for background images
+        document.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            
+            // Parallax background
+            const parallaxBg = document.querySelector('.parallax-bg');
+            if (parallaxBg) {
+                parallaxBg.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+            
+            // Zoom effect on scroll for menu items
+            const zoomElements = document.querySelectorAll('.zoom-on-scroll');
+            zoomElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementTop < windowHeight && elementTop > -200) {
+                    const progress = 1 - (elementTop / windowHeight);
+                    const scale = 1 + (0.1 * progress);
+                    element.style.transform = `scale(${scale})`;
+                } else {
+                    element.style.transform = 'scale(1)';
+                }
+            });
+            
+            // Sticky feature changes
+            const stickyFeature = document.getElementById('sticky-feature');
+            if (stickyFeature) {
+                const sectionTop = document.getElementById('experience').getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (sectionTop < windowHeight * 0.7 && sectionTop > -200) {
+                    const progress = 1 - (sectionTop / (windowHeight * 0.7));
+                    stickyFeature.style.opacity = 0.8 + (0.2 * progress);
+                    stickyFeature.style.transform = `translateY(${20 * (1 - progress)}px)`;
+                }
+            }
+        });
+        
+        // Progress bars animation
+        const progressBars = document.querySelectorAll('.progress-bar');
+        
+        const animateProgressBars = () => {
+            progressBars.forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                bar.style.width = '0%';
+                
+                setTimeout(() => {
+                    bar.style.width = width + '%';
+                }, 500);
+            });
+        };
+        
+        // Trigger progress bars when about section is in view
+        const aboutSection = document.getElementById('about');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateProgressBars();
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        observer.observe(aboutSection);
+        
+        // Simple 3D Scene with Three.js - Korean Stone Bowl
+        function initThreeJS() {
+            const container = document.getElementById('dish-viewer');
+            if (!container) return;
+            
+            // Check if mobile device
+            const isMobile = window.innerWidth <= 768;
+            
+            // Create scene
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf9f9f9);
+            
+            // Create camera
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = isMobile ? 10 : 8;
+            camera.position.y = isMobile ? 4 : 3;
+            
+            // Create renderer with mobile optimizations
+            const renderer = new THREE.WebGLRenderer({ 
+                antialias: !isMobile,
+                alpha: false,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+            container.appendChild(renderer.domElement);
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+            
+            // Create a Korean stone bowl (dolsot)
+            const bowlGeometry = new THREE.CylinderGeometry(
+                isMobile ? 3 : 3, 
+                isMobile ? 2.5 : 2.5, 
+                isMobile ? 2 : 2, 
+                isMobile ? 24 : 32
+            );
+            const bowlMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x333333,
+                shininess: 30,
+                specular: 0x111111
+            });
+            
+            const bowl = new THREE.Mesh(bowlGeometry, bowlMaterial);
+            scene.add(bowl);
+            
+            // Create rice in the bowl
+            const riceGeometry = new THREE.CylinderGeometry(
+                isMobile ? 2.3 : 2.3, 
+                isMobile ? 2 : 2, 
+                isMobile ? 0.8 : 0.8, 
+                isMobile ? 24 : 32
+            );
+            const riceMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xf8f3e6,
+                shininess: 10
+            });
+            
+            const rice = new THREE.Mesh(riceGeometry, riceMaterial);
+            rice.position.y = 0.5;
+            scene.add(rice);
+            
+            // Create various banchan (side dishes) on top
+            const banchanColors = [0xcd2e3a, 0x2d5f2d, 0x2c6bac, 0xf2b01e, 0x8b4513];
+            const banchanCount = isMobile ? 6 : 8;
+            
+            for (let i = 0; i < banchanCount; i++) {
+                const angle = (i / banchanCount) * Math.PI * 2;
+                const radius = isMobile ? 1.5 : 1.5;
+                
+                const banchanGeometry = new THREE.SphereGeometry(isMobile ? 0.3 : 0.3, isMobile ? 12 : 16, isMobile ? 12 : 16);
+                const banchanMaterial = new THREE.MeshPhongMaterial({ 
+                    color: banchanColors[i % banchanColors.length],
+                    shininess: 50
+                });
+                
+                const banchan = new THREE.Mesh(banchanGeometry, banchanMaterial);
+                banchan.position.x = Math.cos(angle) * radius;
+                banchan.position.z = Math.sin(angle) * radius;
+                banchan.position.y = isMobile ? 1.2 : 1.2;
+                
+                // Flatten some banchan
+                if (i % 2 === 0) {
+                    banchan.scale.y = isMobile ? 0.3 : 0.3;
+                }
+                
+                scene.add(banchan);
+            }
+            
+            // Add egg on top
+            const eggGeometry = new THREE.SphereGeometry(isMobile ? 0.4 : 0.4, isMobile ? 12 : 16, isMobile ? 12 : 16);
+            const eggMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xf2b01e,
+                shininess: 80
+            });
+            
+            const egg = new THREE.Mesh(eggGeometry, eggMaterial);
+            egg.position.y = isMobile ? 1.5 : 1.5;
+            scene.add(egg);
+            
+            // Add egg yolk
+            const yolkGeometry = new THREE.SphereGeometry(isMobile ? 0.25 : 0.25, isMobile ? 12 : 16, isMobile ? 12 : 16);
+            const yolkMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xffd700,
+                shininess: 100
+            });
+            
+            const yolk = new THREE.Mesh(yolkGeometry, yolkMaterial);
+            yolk.position.y = isMobile ? 1.5 : 1.5;
+            scene.add(yolk);
+            
+            // Add controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = true;
+            controls.enablePan = false;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = isMobile ? 0.3 : 0.5;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Rotate the bowl slowly
+                bowl.rotation.y += 0.002;
+                rice.rotation.y += 0.002;
+                
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        // Initialize 3D viewer when menu section is in view
+        const menuSection = document.getElementById('menu');
+        const threeJSObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (!document.getElementById('dish-viewer').hasChildNodes()) {
+                        setTimeout(initThreeJS, 300);
+                    }
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        threeJSObserver.observe(menuSection);
+        
+        // Canvas-based animation for food
+        function initCanvasAnimation() {
+            const canvas = document.getElementById('food-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const isMobile = window.innerWidth <= 768;
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            const particles = [];
+            const particleCount = isMobile ? 60 : 80;
+            const colors = ['#cd2e3a', '#2c6bac', '#f2b01e', '#2d5f2d'];
+            
+            // Create food particles
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * (isMobile ? 5 : 6) + 3,
+                    speedX: Math.random() * (isMobile ? 2 : 2) - (isMobile ? 1 : 1),
+                    speedY: Math.random() * (isMobile ? 2 : 2) - (isMobile ? 1 : 1),
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    shape: Math.random() > 0.5 ? 'circle' : 'square'
+                });
+            }
+            
+            function draw() {
+                // Clear with slight fade effect for trailing
+                ctx.fillStyle = 'rgba(249, 249, 249, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw Korean pattern in background
+                ctx.strokeStyle = 'rgba(205, 46, 58, 0.05)';
+                ctx.lineWidth = 1;
+                
+                // Draw grid
+                const gridSize = isMobile ? 50 : 40;
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                
+                // Draw particles
+                particles.forEach(p => {
+                    // Update position
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    
+                    // Bounce off walls
+                    if (p.x < 0 || p.x > canvas.width) p.speedX = -p.speedX;
+                    if (p.y < 0 || p.y > canvas.height) p.speedY = -p.speedY;
+                    
+                    // Draw particle based on shape
+                    if (p.shape === 'circle') {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                        
+                        // Draw highlight
+                        ctx.beginPath();
+                        ctx.arc(p.x - p.size/3, p.y - p.size/3, p.size/3, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.fill();
+                    } else {
+                        // Square shape (like Korean rice cake)
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x - p.size, p.y - p.size, p.size * 2, p.size * 2);
+                        
+                        // Draw pattern on square
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                    }
+                    
+                    // Draw shadow
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y + p.size * 0.7, p.size * 0.8, p.size * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.fill();
+                });
+                
+                // Draw Korean text
+                ctx.font = isMobile ? 'bold 24px "Noto Sans KR", sans-serif' : 'bold 28px "Noto Sans KR", sans-serif';
+                ctx.fillStyle = '#2d5f2d';
+                ctx.textAlign = 'center';
+                ctx.fillText('한식의 미학', canvas.width / 2, isMobile ? 50 : 50);
+                
+                ctx.font = isMobile ? '16px Montserrat' : '18px Montserrat';
+                ctx.fillStyle = '#666';
+                ctx.fillText('The Aesthetics of Korean Cuisine', canvas.width / 2, isMobile ? 75 : 80);
+                
+                requestAnimationFrame(draw);
+            }
+            
+            draw();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+            });
+        }
+        
+        // Initialize canvas animation when in view
+        const canvasObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setTimeout(initCanvasAnimation, 200);
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (canvasContainer) {
+            canvasObserver.observe(canvasContainer);
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Micro-interaction for menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.03)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+            
+            // Touch feedback for mobile
+            item.addEventListener('touchstart', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            item.addEventListener('touchend', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Sticky reservation button interaction
+        const stickyReservation = document.getElementById('stickyReservation');
+        stickyReservation.addEventListener('click', function() {
+            window.scrollTo({
+                top: document.getElementById('contact').offsetTop - 80,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Add subtle hover effect to all buttons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+            
+            // Touch feedback for mobile
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            
+            button.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+        
+        // Add touch feedback for interactive elements
+        document.querySelectorAll('.icon-animated, .social-icon').forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            element.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+        
+        // Add animation to menu item prices on hover
+        document.querySelectorAll('.menu-item').forEach(item => {
+            const price = item.querySelector('.menu-item-price');
+            if (price) {
+                item.addEventListener('mouseenter', () => {
+                    price.style.transform = 'translateX(5px)';
+                    price.style.backgroundPosition = 'left bottom';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    price.style.transform = 'translateX(0)';
+                    price.style.backgroundPosition = 'right bottom';
+                });
+            }
+        });
+        
+        // Add floating animation delay to floating elements
+        document.querySelectorAll('.floating-element').forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.5}s`;
+        });
+        
+        // Prevent zoom on double-tap for mobile
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Prevent pull-to-refresh on mobile
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Enable smooth scrolling on mobile
+        document.addEventListener('touchstart', function() {}, {passive: true});
+        
+        // Fix scrolling on iOS
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            document.body.style.minHeight = '-webkit-fill-available';
+        }
+    </script>
+</body>
+</html>
